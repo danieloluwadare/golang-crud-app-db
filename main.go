@@ -26,6 +26,7 @@ func serveApplication() {
 	router := mux.NewRouter().StrictSlash(true)
 	// router.HandleFunc("/welcome", homeLink)
 	router.HandleFunc("/user", createNewUser).Methods("POST")
+
 	// router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
 	// router.HandleFunc("/events/{id}", updateEvent).Methods("PUT")
 	router.HandleFunc("/users", getAllUsers).Methods("GET")
