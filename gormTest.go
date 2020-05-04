@@ -3,10 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"github.com/joho/godotenv"
 )
 
 type User struct {
@@ -15,24 +18,45 @@ type User struct {
 	Email string
 }
 
-func initialMigration() {
-	db, err := gorm.Open("mysql", "root:password@(127.0.0.1)/testgodb?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("failed to connect database")
-	}
-	defer db.Close()
-
-	// Migrate the schema
-	db.AutoMigrate(&User{})
+type Test struct {
+	gorm.Model
+	Name  string
+	Email string
 }
 
-func allUsers(w http.ResponseWriter, r *http.Request) {
-	db, err := gorm.Open("mysql", "root:password@(127.0.0.1)/testgodb?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		panic("failed to connect database")
+var db *gorm.DB
+
+func init() {
+
+	e := godotenv.Load()
+	if e != nil {
+		fmt.Print(e)
 	}
-	defer db.Close()
+
+	username := os.Getenv("db_user")
+	password := os.Getenv("db_pass")
+	dbName := os.Getenv("db_name")
+	dbHost := os.Getenv("db_host")
+
+	dbUrl := fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbHost, dbName)
+	fmt.Println(dbUrl)
+
+	conn, err := gorm.Open("mysql", dbUrl)
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	db = conn
+	initialMigration()
+}
+
+func initialMigration() {
+
+	// Migrate the schema
+	db.AutoMigrate(&User{}, &Test{})
+}
+
+func getAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	var users []User
 	db.Find(&users)
@@ -41,29 +65,32 @@ func allUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func newUser(w http.ResponseWriter, r *http.Request) {
+func createNewUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("New User Endpoint Hit")
 
-	db, err := gorm.Open("sqlite3", "test.db")
+	var newUser User
+
+	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		panic("failed to connect database")
+		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
 	}
-	defer db.Close()
 
-	vars := mux.Vars(r)
-	name := vars["name"]
-	email := vars["email"]
+	// vars := mux.Vars(r)
+	// name := vars["name"]
+	// email := vars["email"]
 
-	db.Create(&User{Name: name, Email: email})
+	json.Unmarshal(reqBody, &newUser)
+
+	db.Create(&newUser)
 	fmt.Fprintf(w, "New User Successfully Created")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	db, err := gorm.Open("sqlite3", "test.db")
-	if err != nil {
-		panic("failed to connect database")
-	}
-	defer db.Close()
+	// db, err := gorm.Open("sqlite3", "test.db")
+	// if err != nil {
+	// 	panic("failed to connect database")
+	// }
+	// defer db.Close()
 
 	vars := mux.Vars(r)
 	name := vars["name"]
