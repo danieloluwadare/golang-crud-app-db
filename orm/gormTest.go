@@ -1,4 +1,4 @@
-package main
+package orm
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/joho/godotenv"
 )
 
@@ -43,6 +44,7 @@ func init() {
 
 	conn, err := gorm.Open("mysql", dbUrl)
 	if err != nil {
+		fmt.Println("Errrooorrrr ooo")
 		fmt.Print(err)
 	}
 
@@ -56,7 +58,7 @@ func initialMigration() {
 	db.AutoMigrate(&User{}, &Test{})
 }
 
-func getAllUsers(w http.ResponseWriter, r *http.Request) {
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	var users []User
 	db.Find(&users)
@@ -65,7 +67,7 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func createNewUser(w http.ResponseWriter, r *http.Request) {
+func CreateNewUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("New User Endpoint Hit")
 
 	var newUser User

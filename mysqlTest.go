@@ -125,3 +125,5 @@ func querySingleRowDb() {
 	fmt.Println(tag)
 
 }
+
+// go mod init github.com/danieloluwadare/golang-crud-app
