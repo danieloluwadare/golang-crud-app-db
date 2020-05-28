@@ -26,16 +26,15 @@ func main() {
 
 	//serveApplication()
 
-	//res, err:= SendSimpleMessage("sandbox.mailgun.org",
-	//	"-7fba8a4e-0a6e2820")
-	//if err !=nil{
-	//	fmt.Println("error mail-gun", err)
-	//
-	//}
-	//fmt.Println("result mail-gun", res)
+	res, err:= SendSimpleMessage("sandbox.mailgun.org",
+		"-7fba8a4e-0a6e2820")
+	if err !=nil{
+		fmt.Println("error mail-gun", err)
+
+	}
+	fmt.Println("result mail-gun", res)
 
 	timeManipulation()
-
 }
 
 func timeManipulation(){
