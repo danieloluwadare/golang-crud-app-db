@@ -1,4 +1,4 @@
-package main
+package jdbcmysql
 
 import (
 	"database/sql"

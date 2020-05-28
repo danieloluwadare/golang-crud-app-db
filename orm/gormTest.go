@@ -3,14 +3,11 @@ package orm
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
-
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/joho/godotenv"
+	"io/ioutil"
+	"net/http"
 )
 
 type User struct {
@@ -25,37 +22,57 @@ type Test struct {
 	Email string
 }
 
+//Belongs to example
+type CreditCard struct {
+	gorm.Model
+	UserID int
+	User User
+	payment  string
+	paymentType string
+}
+//Belongs to specifying another primary key
+type CreditCard2 struct {
+	gorm.Model
+	UserID int
+	ForId int
+	UID uint `gorm:"column:u_id"`
+	User User `gorm:"foreignkey:UID"`
+	payment  string
+	paymentType string
+}
 var db *gorm.DB
 
-func init() {
-
-	e := godotenv.Load()
-	if e != nil {
-		fmt.Print(e)
-	}
-
-	username := os.Getenv("db_user")
-	password := os.Getenv("db_pass")
-	dbName := os.Getenv("db_name")
-	dbHost := os.Getenv("db_host")
-
-	dbUrl := fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbHost, dbName)
-	fmt.Println(dbUrl)
-
-	conn, err := gorm.Open("mysql", dbUrl)
-	if err != nil {
-		fmt.Println("Errrooorrrr ooo")
-		fmt.Print(err)
-	}
-
-	db = conn
-	initialMigration()
-}
+//func init() {
+//
+//	e := godotenv.Load()
+//	if e != nil {
+//		fmt.Print(e)
+//	}
+//
+//	username := os.Getenv("db_user")
+//	password := os.Getenv("db_pass")
+//	dbName := os.Getenv("db_name")
+//	dbHost := os.Getenv("db_host")
+//
+//	dbUrl := fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbHost, dbName)
+//	fmt.Println(dbUrl)
+//
+//	conn, err := gorm.Open("mysql", dbUrl)
+//	if err != nil {
+//		fmt.Println("Errrooorrrr ooo")
+//		fmt.Print(err)
+//	}
+//
+//	db = conn
+//	initialMigration()
+//}
 
 func initialMigration() {
 
 	// Migrate the schema
-	db.AutoMigrate(&User{}, &Test{})
+	db.AutoMigrate(&User{}, &Test{}, &CreditCard{},&CreditCard2{})
+	db.Model(&CreditCard2{}).AddForeignKey("u_id", "users(id)", "RESTRICT", "RESTRICT")
+
 }
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
